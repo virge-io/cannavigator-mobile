@@ -61,10 +61,28 @@ const QUICK_TOPICS: QuickTopic[] = [
     label: 'Relaxation',
     icon: '\u{1F343}',
     color: topics.relaxation,
-    diseaseSlugs: ['pain_general', 'inflammation', 'fibromyalgia'],
+    diseaseSlugs: ['fibromyalgia'],
     description: 'Physical and mental relaxation',
     advice:
-      'THC and CBD work on CB1/CB2 receptors to relieve tension and pain. Myrcene is the most common cannabis terpene with muscle-relaxant and sedative properties. Beta-Caryophyllene provides anti-inflammatory effects via CB2 activation. Linalool adds anxiolytic support.',
+      'THC and CBD work on CB1/CB2 receptors to relieve tension. Myrcene is the most common cannabis terpene with muscle-relaxant and sedative properties. Linalool adds anxiolytic support, helping the body unwind alongside the mind.',
+  },
+  {
+    label: 'Pain',
+    icon: '\u{1FA79}',
+    color: topics.pain,
+    diseaseSlugs: ['pain_general', 'chronic_pain', 'neuropathic_pain'],
+    description: 'Acute, chronic, or neuropathic pain',
+    advice:
+      'THC and CBD modulate pain through CB1, CB2, and TRPV1 receptors. CBD is non-intoxicating and has the strongest evidence for chronic and inflammatory pain. CBC and CBG show emerging activity in animal models. Beta-Caryophyllene activates CB2 receptors directly, providing peripheral analgesia without psychoactivity.',
+  },
+  {
+    label: 'Inflammation',
+    icon: '\u{1F525}',
+    color: topics.inflammation,
+    diseaseSlugs: ['inflammation', 'inflammatory_pain'],
+    description: 'Anti-inflammatory pathways',
+    advice:
+      'CB2 receptor activation is the primary anti-inflammatory pathway in cannabis pharmacology. CBD inhibits the FAAH enzyme, raising endocannabinoid tone. Beta-Caryophyllene is a selective CB2 agonist found in cannabis terpenes — strong anti-inflammatory effects without intoxication. CBG and THCV also show anti-inflammatory potential.',
   },
 ];
 

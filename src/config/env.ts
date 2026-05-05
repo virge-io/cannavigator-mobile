@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = 'cannavigator_api_base_url';
-const DEFAULT_BASE_URL = 'http://localhost:8000/api/v1';
+const DEFAULT_BASE_URL = 'https://cn-api.prijslijstapp.nl/api/v1';
 
 let cachedUrl: string | null = null;
 

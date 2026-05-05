@@ -13,6 +13,8 @@ export const colors = {
   goldDeep: '#D2B354',
   clay: '#B85450', // muted brick-red, used for anxiety topic card
   amethyst: '#6B5B95', // deep purple, used for relaxation topic card
+  rust: '#8C4A2E', // deep brown-red, used for pain topic card
+  coral: '#C76847', // warm orange-red, used for inflammation topic card
   white: '#FFFFFF',
   whiteMuted: 'rgba(255,255,255,0.7)',
   whiteSubtle: 'rgba(255,255,255,0.4)',
@@ -41,4 +43,6 @@ export const topics = {
   anxiety: colors.clay, // muted red, alarm-toned without being clinical
   euphoria: colors.goldDeep, // warm gold, uplift
   relaxation: colors.amethyst, // deep purple, traditional calm/lavender association
+  pain: colors.rust, // deep brown-red, somber/chronic
+  inflammation: colors.coral, // warm orange-red, heat/fire
 } as const;
