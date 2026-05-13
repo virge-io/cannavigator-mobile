@@ -1,16 +1,17 @@
 import apiClient from './client';
 import { Disease, DiseaseProfile } from '../types/disease';
+import { Paginated } from '../types/api';
 
 export async function fetchDiseases(params?: {
   q?: string;
-  limit?: number;
   skip?: number;
-}): Promise<Disease[]> {
-  const { data } = await apiClient.get<Disease[]>('/diseases', {
+  limit?: number;
+}): Promise<Paginated<Disease>> {
+  const { data } = await apiClient.get<Paginated<Disease>>('/diseases', {
     params: {
-      limit: params?.limit ?? 500,
       q: params?.q || undefined,
-      skip: params?.skip,
+      skip: params?.skip ?? 0,
+      limit: params?.limit ?? 50,
     },
   });
   return data;

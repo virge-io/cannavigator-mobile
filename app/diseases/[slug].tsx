@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Linking, ScrollView } from 'react-native';
 import {
   Box,
   Text,
@@ -17,11 +17,36 @@ import { EffectChip } from '../../src/components/EffectChip';
 import { LoadingState } from '../../src/components/LoadingState';
 import { ErrorState } from '../../src/components/ErrorState';
 import { brand, colors } from '../../src/theme/colors';
+import { PaperRef } from '../../src/types/disease';
+
+function getPaperUrl(paper: PaperRef): string | null {
+  if (paper.doi) return `https://doi.org/${paper.doi}`;
+  if (paper.pmid) return `https://pubmed.ncbi.nlm.nih.gov/${paper.pmid}/`;
+  return null;
+}
+
+function prettyEnum(v: string | null | undefined): string | null {
+  if (!v) return null;
+  if (v === 'rct') return 'RCT';
+  return v.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const PAPER_PAGE_SIZE = 10;
 
 export default function DiseaseDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const { data: disease, isLoading, isError, refetch } = useDiseaseDetail(slug);
+  const [paperLimit, setPaperLimit] = useState(PAPER_PAGE_SIZE);
+
+  const uniquePapers = useMemo<PaperRef[]>(() => {
+    if (!disease) return [];
+    const map = new Map<string, PaperRef>();
+    disease.conclusions.forEach((c) => map.set(c.paper.id, c.paper));
+    disease.ligands.forEach((l) => l.papers.forEach((p) => map.set(p.id, p)));
+    disease.targets.forEach((t) => t.papers.forEach((p) => map.set(p.id, p)));
+    return Array.from(map.values()).sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
+  }, [disease]);
 
   if (isLoading) return <LoadingState />;
   if (isError || !disease) return <ErrorState message="Failed to load disease" onRetry={refetch} />;
@@ -31,7 +56,11 @@ export default function DiseaseDetailScreen() {
     disease.targets.length > 0 ||
     disease.ligands.length > 0 ||
     disease.desired_effects.length > 0 ||
+    uniquePapers.length > 0 ||
     !!disease.literature_text;
+
+  const visiblePapers = uniquePapers.slice(0, paperLimit);
+  const hiddenPaperCount = uniquePapers.length - visiblePapers.length;
 
   return (
     <>
@@ -45,7 +74,7 @@ export default function DiseaseDetailScreen() {
                 {disease.display_name}
               </Heading>
 
-              {disease.primary_cluster || disease.secondary_cluster ? (
+              {(disease.primary_cluster || disease.secondary_cluster || disease.paper_count > 0) ? (
                 <HStack gap="$1" mt="$2" flexWrap="wrap">
                   {disease.primary_cluster ? (
                     <Badge action="success" size="sm" borderRadius="$full">
@@ -55,6 +84,11 @@ export default function DiseaseDetailScreen() {
                   {disease.secondary_cluster ? (
                     <Badge action="info" size="sm" borderRadius="$full">
                       <BadgeText>{disease.secondary_cluster}</BadgeText>
+                    </Badge>
+                  ) : null}
+                  {disease.paper_count > 0 ? (
+                    <Badge action="muted" size="sm" borderRadius="$full">
+                      <BadgeText>{disease.paper_count} papers</BadgeText>
                     </Badge>
                   ) : null}
                 </HStack>
@@ -202,6 +236,86 @@ export default function DiseaseDetailScreen() {
                     ) : null}
                   </Box>
                 ))}
+              </Box>
+            ) : null}
+
+            {/* Evidence Papers */}
+            {uniquePapers.length > 0 ? (
+              <Box
+                bg="$white"
+                p="$4"
+                borderRadius="$lg"
+                borderWidth={1}
+                borderColor="$borderLight200"
+              >
+                <HStack alignItems="baseline" justifyContent="space-between" mb="$3">
+                  <Heading size="sm" color="$textDark700">
+                    Evidence Papers
+                  </Heading>
+                  <Text fontSize="$2xs" color="$textLight500">
+                    {disease.paper_count} mention this condition
+                  </Text>
+                </HStack>
+                {visiblePapers.map((p) => {
+                  const url = getPaperUrl(p);
+                  const pubType = prettyEnum(p.publication_type);
+                  const evidence = prettyEnum(p.evidence_level);
+                  return (
+                    <Pressable
+                      key={p.id}
+                      onPress={() => {
+                        if (url) Linking.openURL(url);
+                      }}
+                      disabled={!url}
+                      py="$2"
+                      borderBottomWidth={1}
+                      borderBottomColor="$borderLight100"
+                    >
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$medium"
+                        color={url ? '$primary700' : '$textDark700'}
+                        numberOfLines={2}
+                      >
+                        {p.title}
+                      </Text>
+                      {p.journal || p.year ? (
+                        <Text fontSize="$2xs" color="$textLight500" mt="$1">
+                          {[p.journal, p.year].filter(Boolean).join(' · ')}
+                        </Text>
+                      ) : null}
+                      {pubType || evidence ? (
+                        <HStack gap="$1" mt="$1" flexWrap="wrap">
+                          {pubType ? (
+                            <Badge action="muted" size="sm" borderRadius="$full">
+                              <BadgeText fontSize="$2xs">{pubType}</BadgeText>
+                            </Badge>
+                          ) : null}
+                          {evidence ? (
+                            <Badge
+                              action={evidence === 'RCT' ? 'success' : 'info'}
+                              size="sm"
+                              borderRadius="$full"
+                            >
+                              <BadgeText fontSize="$2xs">{evidence}</BadgeText>
+                            </Badge>
+                          ) : null}
+                        </HStack>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+                {hiddenPaperCount > 0 ? (
+                  <Pressable
+                    onPress={() => setPaperLimit((l) => l + PAPER_PAGE_SIZE)}
+                    py="$3"
+                    alignItems="center"
+                  >
+                    <Text fontSize="$sm" color="$primary600" fontWeight="$medium">
+                      Show {Math.min(PAPER_PAGE_SIZE, hiddenPaperCount)} more
+                    </Text>
+                  </Pressable>
+                ) : null}
               </Box>
             ) : null}
 

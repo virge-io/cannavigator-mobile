@@ -1,10 +1,15 @@
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchDiseases, fetchDiseaseDetail } from '../api/diseases';
 
+const PAGE_SIZE = 50;
+
 export function useDiseases(searchQuery?: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['diseases', searchQuery ?? ''],
-    queryFn: () => fetchDiseases({ q: searchQuery, limit: 500 }),
+    queryFn: ({ pageParam }) =>
+      fetchDiseases({ q: searchQuery, skip: pageParam, limit: PAGE_SIZE }),
+    initialPageParam: 0,
+    getNextPageParam: (last) => (last.has_more ? last.skip + last.limit : undefined),
     staleTime: 5 * 60 * 1000,
     placeholderData: keepPreviousData,
   });

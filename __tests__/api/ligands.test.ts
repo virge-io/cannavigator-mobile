@@ -16,34 +16,42 @@ describe('ligands API', () => {
     jest.clearAllMocks();
   });
 
-  it('fetchLigands calls /ligands', async () => {
-    const mockLigands = [
-      {
-        id: '1',
-        slug: 'cbd',
-        display_name: 'CBD',
-        type: 'Phytocannabinoid',
-        chemical_family: null,
-        synonyms: [],
-      },
-    ];
-    mockedClient.get.mockResolvedValue({ data: mockLigands });
+  it('fetchLigands calls /ligands with default paging', async () => {
+    const mockPage = {
+      items: [
+        {
+          id: '1',
+          slug: 'cbd',
+          display_name: 'CBD',
+          type: 'Phytocannabinoid',
+          chemical_family: null,
+          synonyms: [],
+        },
+      ],
+      total: 1,
+      skip: 0,
+      limit: 50,
+      has_more: false,
+    };
+    mockedClient.get.mockResolvedValue({ data: mockPage });
 
     const result = await fetchLigands();
 
     expect(mockedClient.get).toHaveBeenCalledWith('/ligands', {
-      params: { type: undefined, q: undefined },
+      params: { type: undefined, q: undefined, skip: 0, limit: 50 },
     });
-    expect(result).toEqual(mockLigands);
+    expect(result).toEqual(mockPage);
   });
 
-  it('fetchLigands passes type filter', async () => {
-    mockedClient.get.mockResolvedValue({ data: [] });
+  it('fetchLigands passes type filter and skip', async () => {
+    mockedClient.get.mockResolvedValue({
+      data: { items: [], total: 0, skip: 0, limit: 50, has_more: false },
+    });
 
-    await fetchLigands({ type: 'Terpene' });
+    await fetchLigands({ type: 'Terpene', skip: 50 });
 
     expect(mockedClient.get).toHaveBeenCalledWith('/ligands', {
-      params: { type: 'Terpene', q: undefined },
+      params: { type: 'Terpene', q: undefined, skip: 50, limit: 50 },
     });
   });
 

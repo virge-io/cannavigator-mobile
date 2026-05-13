@@ -16,25 +16,33 @@ describe('diseases API', () => {
     jest.clearAllMocks();
   });
 
-  it('fetchDiseases calls /diseases with default limit', async () => {
-    const mockData = [{ id: '1', slug: 'epilepsy', display_name: 'Epilepsy' }];
-    mockedClient.get.mockResolvedValue({ data: mockData });
+  it('fetchDiseases calls /diseases with default paging', async () => {
+    const mockPage = {
+      items: [{ id: '1', slug: 'epilepsy', display_name: 'Epilepsy' }],
+      total: 1,
+      skip: 0,
+      limit: 50,
+      has_more: false,
+    };
+    mockedClient.get.mockResolvedValue({ data: mockPage });
 
     const result = await fetchDiseases();
 
     expect(mockedClient.get).toHaveBeenCalledWith('/diseases', {
-      params: { limit: 500, q: undefined, skip: undefined },
+      params: { q: undefined, skip: 0, limit: 50 },
     });
-    expect(result).toEqual(mockData);
+    expect(result).toEqual(mockPage);
   });
 
   it('fetchDiseases passes search query', async () => {
-    mockedClient.get.mockResolvedValue({ data: [] });
+    mockedClient.get.mockResolvedValue({
+      data: { items: [], total: 0, skip: 0, limit: 50, has_more: false },
+    });
 
-    await fetchDiseases({ q: 'epilepsy' });
+    await fetchDiseases({ q: 'epilepsy', skip: 100 });
 
     expect(mockedClient.get).toHaveBeenCalledWith('/diseases', {
-      params: { limit: 500, q: 'epilepsy', skip: undefined },
+      params: { q: 'epilepsy', skip: 100, limit: 50 },
     });
   });
 

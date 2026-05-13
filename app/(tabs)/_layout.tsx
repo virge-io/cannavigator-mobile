@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Search, Activity, Leaf, Grid3X3, Settings } from 'lucide-react-native';
+import { Search, Stethoscope, FlaskConical, Grid3X3, Settings } from 'lucide-react-native';
 import { brand } from '../../src/theme/colors';
 import { AppHeader } from '../../src/components/AppHeader';
 
@@ -29,14 +29,14 @@ export default function TabLayout() {
         name="diseases"
         options={{
           title: 'Diseases',
-          tabBarIcon: ({ color, size }) => <Activity color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Stethoscope color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="profiles"
         options={{
           title: 'Profiles',
-          tabBarIcon: ({ color, size }) => <Leaf color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <FlaskConical color={color} size={size} />,
         }}
       />
       <Tabs.Screen

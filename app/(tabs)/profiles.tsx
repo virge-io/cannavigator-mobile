@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, ActivityIndicator } from 'react-native';
 import { Box, Text, HStack, Button, ButtonText } from '@gluestack-ui/themed';
 import { useRouter } from 'expo-router';
 import { SearchBar } from '../../src/components/SearchBar';
@@ -14,11 +14,20 @@ export default function ProfilesScreen() {
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('All');
   const router = useRouter();
-  const { data: ligands, isLoading, isError, refetch } = useLigands();
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useLigands();
+
+  const allLigands = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
 
   const filtered = useMemo(() => {
-    if (!ligands) return [];
-    return ligands.filter((l) => {
+    return allLigands.filter((l) => {
       if (typeFilter !== 'All' && !l.type.toLowerCase().includes(typeFilter.toLowerCase()))
         return false;
       if (query) {
@@ -31,7 +40,7 @@ export default function ProfilesScreen() {
       }
       return true;
     });
-  }, [ligands, query, typeFilter]);
+  }, [allLigands, query, typeFilter]);
 
   return (
     <Box flex={1} bg="$backgroundLight50">
@@ -65,6 +74,17 @@ export default function ProfilesScreen() {
           renderItem={({ item }) => (
             <LigandCard ligand={item} onPress={() => router.push(`/profiles/${item.slug}`)} />
           )}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <Box py="$4" alignItems="center">
+                <ActivityIndicator />
+              </Box>
+            ) : null
+          }
           ListEmptyComponent={
             <Text color="$textLight400" textAlign="center" mt="$8">
               No profiles found
