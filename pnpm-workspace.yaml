@@ -13,12 +13,4 @@ minimumReleaseAge: 10080
 # lockfile is committed these versions are pinned, so the exclusion
 # only matters at migration time — but leaving the rules in place
 # makes future SDK upgrades smoother.
-minimumReleaseAgeExclude:
-  - 'expo'
-  - 'expo-*'
-  - '@expo/*'
-  - 'react'
-  - 'react-dom'
-  - 'react-native'
-  - 'react-native-*'
-  - 'jest-expo'
+#minimumReleaseAgeExclude:
